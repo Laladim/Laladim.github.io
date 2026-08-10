@@ -251,13 +251,6 @@
       padding: 0 .04em;
     }
 
-    .word.mark-rose { background: color-mix(in srgb, var(--rose) 78%, transparent); }
-    .word.mark-gold { background: color-mix(in srgb, var(--gold) 78%, transparent); }
-    .word.mark-lemon { background: color-mix(in srgb, var(--lemon) 78%, transparent); }
-    .word.mark-green { background: color-mix(in srgb, var(--green) 78%, transparent); }
-    .word.mark-mint { background: color-mix(in srgb, var(--mint) 78%, transparent); }
-    .word.mark-blue { background: color-mix(in srgb, var(--blue) 78%, transparent); }
-    .word.mark-violet { background: color-mix(in srgb, var(--violet) 78%, transparent); }
     .word.has-refs {
       text-decoration: none;
       cursor: inherit;
@@ -578,18 +571,6 @@
 
     const palette = ["rose", "gold", "lemon", "green", "mint", "blue", "violet"];
 
-    const highlights = [
-      { re: /lovers of money/i, color: "gold" },
-      { re: /ridiculed him/i, color: "lemon" },
-      { re: /justify yourselves before men/i, color: "green" },
-      { re: /God knows your hearts/i, color: "green" },
-      { re: /is an abomination in the sight of God/i, color: "mint" },
-      { re: /The Law and the Prophets were until John/i, color: "mint" },
-      { re: /the good news of the kingdom of God is preached/i, color: "blue" },
-      { re: /everyone forces his way into it/i, color: "violet" },
-      { re: /it is easier for heaven and earth to pass away than for one dot of the Law to become void/i, color: "violet" }
-    ];
-
     const seededCitedMap = {
       "Luke 16:14": ["Luke 11:39", "Luke 20:47", "II Timothy 3:2", "I Timothy 6:10", "Luke 23:35", "Luke 10:29"],
       "Luke 16:15": ["Proverbs 16:5", "I Samuel 16:7", "I Chronicles 28:9", "Proverbs 21:2"],
@@ -733,7 +714,6 @@
         </div>`;
       }).join("");
       els.passage.innerHTML = html;
-      applyPhraseHighlights();
       els.note.textContent = "The passage text is the public-domain World English Bible, 2020 stable text edition, from eBible.org. Cross-reference cards come from OpenBible.info data, which is based mostly on the Treasury of Scripture Knowledge.";
     }
 
@@ -747,28 +727,6 @@
         previous = token[0];
         return `${spacer}<span class="word${refClass}"${tag}>${text}</span>`;
       }).join("");
-    }
-
-    function applyPhraseHighlights() {
-      const words = Array.from(els.passage.querySelectorAll(".word"));
-      highlights.forEach((item) => {
-        let passageText = "";
-        let prior = "";
-        const spans = words.map((word) => {
-          const spacer = needsSpace(prior, word.textContent) ? " " : "";
-          const start = passageText.length + spacer.length;
-          passageText += spacer + word.textContent;
-          prior = word.textContent;
-          return { word, start, end: passageText.length };
-        });
-        const match = passageText.match(item.re);
-        if (!match || match.index == null) return;
-        const start = match.index;
-        const end = start + match[0].length;
-        spans.forEach((span) => {
-          if (span.end > start && span.start < end) span.word.classList.add(`mark-${item.color}`);
-        });
-      });
     }
 
     function renderCards() {
