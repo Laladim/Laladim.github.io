@@ -1,0 +1,965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bible Study Dashboard</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --ink: #171512;
+      --paper: #f8f4ec;
+      --panel: #fffdf8;
+      --line: #d9cdb9;
+      --muted: #74695c;
+      --blue: #78b8dd;
+      --green: #7ee879;
+      --mint: #77efbd;
+      --rose: #f48d8c;
+      --gold: #f4b35e;
+      --lemon: #fcf568;
+      --violet: #d8b8f0;
+      --shadow: 0 20px 60px rgba(36, 28, 18, .14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(23,21,18,.045) 1px, transparent 1px) 0 0 / 34px 34px,
+        linear-gradient(rgba(23,21,18,.035) 1px, transparent 1px) 0 0 / 34px 34px,
+        var(--paper);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr) 360px;
+      gap: 18px;
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .rail, .study, .related {
+      border: 2px solid var(--ink);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .rail {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .brand {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 14px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 31px;
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .search-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .search-box label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: #574c40;
+    }
+
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 44px;
+      gap: 8px;
+    }
+
+    input {
+      width: 100%;
+      border: 2px solid var(--ink);
+      background: #fff;
+      padding: 10px 12px;
+      min-height: 44px;
+      outline: none;
+    }
+
+    input:focus {
+      box-shadow: 0 0 0 4px rgba(120, 184, 221, .35);
+    }
+
+    .icon-button, .chip, .tab {
+      border: 2px solid var(--ink);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .icon-button {
+      min-height: 44px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .chip:hover, .tab:hover, .icon-button:hover {
+      background: var(--lemon);
+    }
+
+    .examples {
+      display: grid;
+      gap: 7px;
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .status {
+      border: 2px solid var(--ink);
+      padding: 12px;
+      background: #efe3cf;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .study {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 2px solid var(--ink);
+      padding: 14px 16px;
+      background: #fff;
+    }
+
+    .toolbar strong {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 7px 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: #fff;
+    }
+
+    .passage-wrap {
+      overflow: auto;
+      padding: 34px 34px 46px;
+    }
+
+    .passage-title {
+      margin: 0 0 20px;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: clamp(34px, 5vw, 64px);
+      line-height: .92;
+      letter-spacing: 0;
+    }
+
+    .passage {
+      max-width: 980px;
+      display: grid;
+      gap: 18px;
+      font-size: clamp(24px, 2.5vw, 36px);
+      line-height: 1.32;
+    }
+
+    .verse {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      border-bottom: 1px solid rgba(23, 21, 18, .16);
+      padding-bottom: 18px;
+    }
+
+    .verse-num {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-end;
+      gap: 5px;
+      color: var(--muted);
+      font-size: .55em;
+      line-height: 1.4;
+      padding-top: .24em;
+      white-space: nowrap;
+    }
+
+    .verse-text {
+      display: block;
+    }
+
+    .verse-number {
+      color: var(--muted);
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .word {
+      position: relative;
+      padding: 0 .04em;
+    }
+
+    .word.mark-rose { background: color-mix(in srgb, var(--rose) 78%, transparent); }
+    .word.mark-gold { background: color-mix(in srgb, var(--gold) 78%, transparent); }
+    .word.mark-lemon { background: color-mix(in srgb, var(--lemon) 78%, transparent); }
+    .word.mark-green { background: color-mix(in srgb, var(--green) 78%, transparent); }
+    .word.mark-mint { background: color-mix(in srgb, var(--mint) 78%, transparent); }
+    .word.mark-blue { background: color-mix(in srgb, var(--blue) 78%, transparent); }
+    .word.mark-violet { background: color-mix(in srgb, var(--violet) 78%, transparent); }
+    .word.has-refs {
+      text-decoration: none;
+      cursor: inherit;
+    }
+
+    .ref-letter {
+      color: #3987a8;
+      font-size: .42em;
+      font-style: italic;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .note-line {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      max-width: 720px;
+    }
+
+    .related {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .related-head {
+      padding: 16px;
+      border-bottom: 2px solid var(--ink);
+      background: var(--green);
+    }
+
+    .related-head h2 {
+      margin: 0;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+
+    .related-head p {
+      margin: 8px 0 0;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .cards {
+      overflow: auto;
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      border: 2px solid var(--ink);
+      background: #fff;
+      padding: 13px;
+      box-shadow: 7px 7px 0 rgba(23, 21, 18, .18);
+    }
+
+    .card.c-rose { background: #ffe8e8; }
+    .card.c-gold { background: #ffe3b6; }
+    .card.c-lemon { background: #fff9a8; }
+    .card.c-green { background: #d7ffae; }
+    .card.c-mint { background: #bfffe3; }
+    .card.c-blue { background: #cde5ff; }
+    .card.c-violet { background: #ead3ff; }
+
+    .verse-group {
+      display: grid;
+      gap: 10px;
+    }
+
+    .verse-group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      border: 2px solid var(--ink);
+      background: var(--panel);
+      padding: 9px 11px;
+      color: var(--ink);
+      cursor: pointer;
+      font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+      font-size: 22px;
+      letter-spacing: 0;
+      text-align: left;
+      box-shadow: 5px 5px 0 rgba(23, 21, 18, .14);
+    }
+
+    .source-verse-label {
+      display: block;
+    }
+
+    .source-verse-text {
+      display: block;
+      margin-top: 5px;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .verse-group-title:hover {
+      background: var(--lemon);
+    }
+
+    .verse-group-title[aria-expanded="true"] {
+      background: var(--lemon);
+    }
+
+    .verse-group-meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .toggle-mark {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--ink);
+      background: #fff;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .group-cards {
+      display: grid;
+      gap: 10px;
+      border-left: 4px solid var(--ink);
+      padding: 0 0 0 12px;
+    }
+
+    .group-cards[hidden] {
+      display: none;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .card small {
+      display: block;
+      margin-top: 8px;
+      color: #527c8f;
+      font-size: 12px;
+      font-style: italic;
+      font-weight: 700;
+    }
+
+    .empty {
+      border: 2px dashed var(--ink);
+      padding: 16px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 18px;
+      display: grid;
+      place-items: center;
+      background: rgba(248, 244, 236, .92);
+      z-index: 10;
+      border: 2px solid var(--ink);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .loading.hidden { display: none; }
+
+    @media (max-width: 1180px) {
+      .app {
+        grid-template-columns: 270px minmax(0, 1fr);
+      }
+
+      .related {
+        grid-column: 1 / -1;
+        min-height: 360px;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        grid-template-columns: 1fr;
+        padding: 10px;
+      }
+
+      .passage-wrap {
+        padding: 22px 18px 30px;
+      }
+
+      .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">Loading public-domain Bible data...</div>
+  <main class="app">
+    <aside class="rail">
+      <div class="brand">
+        <h1>Bible Study Dashboard</h1>
+        <p>Enter a passage, read the World English Bible text, then inspect cited verses from the OpenBible cross-reference dataset.</p>
+      </div>
+
+      <form class="search-box" id="searchForm">
+        <label for="referenceInput">Passage</label>
+        <div class="search-row">
+          <input id="referenceInput" value="Luke 16:14-17" autocomplete="off" spellcheck="false">
+          <button class="icon-button" type="submit" aria-label="Load passage">Go</button>
+        </div>
+      </form>
+
+      <section>
+        <p class="panel-title">Try</p>
+        <div class="examples">
+          <button class="chip" data-ref="Luke 16:14-17">Luke 16:14-17</button>
+          <button class="chip" data-ref="Romans 8:1-11">Romans 8:1-11</button>
+          <button class="chip" data-ref="Psalm 1">Psalm 1</button>
+          <button class="chip" data-ref="Matthew 5:17-20">Matthew 5:17-20</button>
+        </div>
+      </section>
+
+      <div class="status" id="dataStatus">Preparing dashboard...</div>
+    </aside>
+
+    <section class="study">
+      <div class="toolbar">
+        <strong id="rangeLabel">Luke 16:14-17</strong>
+        <div class="tabs">
+          <button class="tab active" id="tabCited" type="button">Cross-references</button>
+          <button class="tab" id="tabLexical" type="button" hidden>Lexical echoes</button>
+        </div>
+      </div>
+      <div class="passage-wrap">
+        <h2 class="passage-title" id="chapterTitle">The Law and the Kingdom of God</h2>
+        <article class="passage" id="passage"></article>
+        <p class="note-line" id="noteLine"></p>
+      </div>
+    </section>
+
+    <aside class="related">
+      <div class="related-head">
+        <h2 id="relatedTitle">Related Verses</h2>
+        <p id="relatedMeta">Cards populate from the local OpenBible cross-reference dataset.</p>
+      </div>
+      <div class="cards" id="cards"></div>
+    </aside>
+  </main>
+
+  <script>
+    const BIBLE_PATH = "bible/web-text/json/WEB.json";
+    const CROSSREF_PATH = "bible/cross-references/openbible-cross-references.json";
+
+    const bookAliases = {
+      "1 samuel": "I Samuel",
+      "2 samuel": "II Samuel",
+      "1 kings": "I Kings",
+      "2 kings": "II Kings",
+      "1 chronicles": "I Chronicles",
+      "2 chronicles": "II Chronicles",
+      "psalm": "Psalms",
+      "psalms": "Psalms",
+      "song of songs": "Song of Solomon",
+      "song of solomon": "Song of Solomon",
+      "1 corinthians": "I Corinthians",
+      "2 corinthians": "II Corinthians",
+      "1 thessalonians": "I Thessalonians",
+      "2 thessalonians": "II Thessalonians",
+      "1 timothy": "I Timothy",
+      "2 timothy": "II Timothy",
+      "1 peter": "I Peter",
+      "2 peter": "II Peter",
+      "1 john": "I John",
+      "2 john": "II John",
+      "3 john": "III John",
+      "revelation": "Revelation of John"
+    };
+
+    const palette = ["rose", "gold", "lemon", "green", "mint", "blue", "violet"];
+
+    const highlights = [
+      { re: /The Pharisees/i, color: "rose" },
+      { re: /lovers of money/i, color: "gold" },
+      { re: /ridiculed him/i, color: "lemon" },
+      { re: /justify yourselves before men/i, color: "green" },
+      { re: /God knows your hearts/i, color: "green" },
+      { re: /is an abomination in the sight of God/i, color: "mint" },
+      { re: /The Law and the Prophets were until John/i, color: "mint" },
+      { re: /the good news of the kingdom of God is preached/i, color: "blue" },
+      { re: /everyone forces his way into it/i, color: "violet" },
+      { re: /it is easier for heaven and earth to pass away than for one dot of the Law to become void/i, color: "violet" }
+    ];
+
+    const seededCitedMap = {
+      "Luke 16:14": ["Luke 11:39", "Luke 20:47", "II Timothy 3:2", "I Timothy 6:10", "Luke 23:35", "Luke 10:29"],
+      "Luke 16:15": ["Proverbs 16:5", "I Samuel 16:7", "I Chronicles 28:9", "Proverbs 21:2"],
+      "Luke 16:16": ["Matthew 11:12-13", "Luke 4:43", "Luke 15:1"],
+      "Luke 16:17": ["Matthew 5:18"]
+    };
+
+    let bible = null;
+    let crossrefs = null;
+    let currentRange = null;
+    let currentMode = "cited";
+
+    const els = {
+      loading: document.getElementById("loading"),
+      form: document.getElementById("searchForm"),
+      input: document.getElementById("referenceInput"),
+      range: document.getElementById("rangeLabel"),
+      title: document.getElementById("chapterTitle"),
+      passage: document.getElementById("passage"),
+      cards: document.getElementById("cards"),
+      note: document.getElementById("noteLine"),
+      status: document.getElementById("dataStatus"),
+      relatedTitle: document.getElementById("relatedTitle"),
+      relatedMeta: document.getElementById("relatedMeta"),
+      tabCited: document.getElementById("tabCited"),
+      tabLexical: document.getElementById("tabLexical")
+    };
+
+    Promise.all([
+      fetch(BIBLE_PATH).then((res) => {
+        if (!res.ok) throw new Error("Could not load World English Bible JSON");
+        return res.json();
+      }),
+      fetch(CROSSREF_PATH).then((res) => {
+        if (!res.ok) throw new Error("Could not load OpenBible cross-reference JSON");
+        return res.json();
+      })
+    ])
+      .then(([bibleData, crossrefData]) => {
+        bible = bibleData;
+        crossrefs = crossrefData;
+        els.loading.classList.add("hidden");
+        els.status.textContent = `${Object.keys(bible.books).length} World English Bible books loaded. ${crossrefs.source_verses.toLocaleString()} source verses with OpenBible cross-references loaded.`;
+        loadReference(els.input.value);
+      })
+      .catch((err) => {
+        els.loading.textContent = `Open this through a local server so the app can fetch the local Bible data. Error: ${err.message}`;
+      });
+
+    els.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadReference(els.input.value);
+    });
+
+    document.querySelectorAll("[data-ref]").forEach((button) => {
+      button.addEventListener("click", () => {
+        els.input.value = button.dataset.ref;
+        loadReference(button.dataset.ref);
+      });
+    });
+
+    els.tabCited.addEventListener("click", () => switchMode("cited"));
+    els.tabLexical.addEventListener("click", () => switchMode("lexical"));
+    els.cards.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-group-toggle]");
+      if (!button || !els.cards.contains(button)) return;
+      toggleGroup(button);
+    });
+
+    function switchMode(mode) {
+      currentMode = mode;
+      els.tabCited.classList.toggle("active", mode === "cited");
+      els.tabLexical.classList.toggle("active", mode === "lexical");
+      renderCards();
+    }
+
+    function canonicalBook(name) {
+      const cleaned = name.toLowerCase().replace(/\s+/g, " ").trim();
+      if (bookAliases[cleaned]) return bookAliases[cleaned];
+      const found = Object.keys(bible.books).find((book) => book.toLowerCase() === cleaned);
+      if (found) return found;
+      const title = cleaned.replace(/\b\w/g, (m) => m.toUpperCase());
+      return bible.books[title] ? title : null;
+    }
+
+    function displayReference(book, chapter, startVerse, endChapter, endVerse) {
+      const shownBook = prettyBook(book);
+      if (startVerse === 1 && endVerse === bible.books[book][chapter - 1].length && chapter === endChapter) return `${shownBook} ${chapter}`;
+      if (chapter === endChapter && startVerse === endVerse) return `${shownBook} ${chapter}:${startVerse}`;
+      if (chapter === endChapter) return `${shownBook} ${chapter}:${startVerse}-${endVerse}`;
+      return `${shownBook} ${chapter}:${startVerse}-${endChapter}:${endVerse}`;
+    }
+
+    function prettyBook(book) {
+      if (book === "Psalms") return "Psalm";
+      if (book.startsWith("Psalms ")) return book.replace("Psalms ", "Psalm ");
+      return book
+        .replace("III ", "3 ")
+        .replace("II ", "2 ")
+        .replace("I ", "1 ")
+        .replace("Revelation of John", "Revelation")
+        .replace("Song of Solomon", "Song of Songs");
+    }
+
+    function loadReference(raw) {
+      if (!bible) return;
+      try {
+        currentRange = parseReference(raw);
+        els.range.textContent = currentRange.label;
+        els.title.textContent = currentRange.book === "Luke" && currentRange.chapter === 16 ? "The Law and the Kingdom of God" : `${prettyBook(currentRange.book)} ${currentRange.chapter}`;
+        renderPassage();
+        renderCards();
+      } catch (err) {
+        els.passage.innerHTML = `<span class="empty">${escapeHtml(err.message)}</span>`;
+        els.cards.innerHTML = "";
+      }
+    }
+
+    function verseRows(range) {
+      const rows = [];
+      for (let ch = range.chapter; ch <= range.endChapter; ch += 1) {
+        const verses = bible.books[range.book][ch - 1] || [];
+        const start = ch === range.chapter ? range.startVerse : 1;
+        const end = ch === range.endChapter ? range.endVerse : verses.length;
+        for (let v = start; v <= end; v += 1) {
+          if (verses[v - 1]) rows.push({ book: range.book, chapter: ch, verse: v, tokens: verses[v - 1] });
+        }
+      }
+      return rows;
+    }
+
+    function renderPassage() {
+      const rows = verseRows(currentRange);
+      const html = rows.map((row) => {
+        const ref = `${row.book} ${row.chapter}:${row.verse}`;
+        const citeCount = openBibleRefsFor(ref).length || seededCitedRefsFor(ref).length;
+        const letter = citeCount ? `<span class="ref-letter">${String.fromCharCode(96 + Math.min(citeCount, 26))}</span>` : "";
+        return `<div class="verse" data-ref="${escapeHtml(ref)}">
+          <span class="verse-num"><span class="verse-number">${row.verse}</span>${letter}</span>
+          <span class="verse-text">${renderVerseTokens(row.tokens, citeCount > 0)}</span>
+        </div>`;
+      }).join("");
+      els.passage.innerHTML = html;
+      applyPhraseHighlights();
+      els.note.textContent = "The passage text is the public-domain World English Bible, 2020 stable text edition, from eBible.org. Cross-reference cards come from OpenBible.info data, which is based mostly on the Treasury of Scripture Knowledge.";
+    }
+
+    function renderVerseTokens(tokens, hasRefs) {
+      let previous = "";
+      return tokens.map((token) => {
+        const text = escapeHtml(token[0]);
+        const tag = token[1] ? ` data-strong="${escapeHtml(token[1])}"` : "";
+        const refClass = hasRefs && /[A-Za-z]/.test(token[0]) ? " has-refs" : "";
+        const spacer = needsSpace(previous, token[0]) ? " " : "";
+        previous = token[0];
+        return `${spacer}<span class="word${refClass}"${tag}>${text}</span>`;
+      }).join("");
+    }
+
+    function applyPhraseHighlights() {
+      const words = Array.from(els.passage.querySelectorAll(".word"));
+      highlights.forEach((item) => {
+        let passageText = "";
+        let prior = "";
+        const spans = words.map((word) => {
+          const spacer = needsSpace(prior, word.textContent) ? " " : "";
+          const start = passageText.length + spacer.length;
+          passageText += spacer + word.textContent;
+          prior = word.textContent;
+          return { word, start, end: passageText.length };
+        });
+        const match = passageText.match(item.re);
+        if (!match || match.index == null) return;
+        const start = match.index;
+        const end = start + match[0].length;
+        spans.forEach((span) => {
+          if (span.end > start && span.start < end) span.word.classList.add(`mark-${item.color}`);
+        });
+      });
+    }
+
+    function renderCards() {
+      if (!currentRange) return;
+      els.relatedTitle.textContent = currentMode === "cited" ? "Cross-References" : "Lexical Echoes";
+      els.relatedMeta.textContent = currentMode === "cited"
+        ? `${crossrefs.source} loaded locally. Groups follow the passage verse order.`
+        : "Generated locally by comparing shared Strong's tags in the selected passage.";
+
+      if (currentMode === "cited") {
+        const groups = citedGroups();
+        if (!groups.length) {
+          els.cards.innerHTML = `<div class="empty">No OpenBible cross-reference cards were found for this passage. Use Lexical echoes for local related-verse discovery.</div>`;
+          return;
+        }
+        let cardIndex = 0;
+        els.cards.innerHTML = groups.map((group, groupIndex) => {
+          const cards = group.rows.map((row) => {
+            const color = palette[cardIndex++ % palette.length];
+            return `<article class="card c-${color}">
+              <div class="card-top"><span>${escapeHtml(row.source || "Related")}</span><span>${escapeHtml(row.ref)}</span></div>
+              <p>${escapeHtml(row.text)}</p>
+              <small>Read full chapter</small>
+            </article>`;
+          }).join("");
+          const groupId = `xref-group-${groupIndex}`;
+          return `<section class="verse-group" data-source-ref="${escapeHtml(group.sourceRef)}">
+            <button class="verse-group-title" type="button" aria-expanded="false" aria-controls="${groupId}" data-group-toggle>
+              <span>
+                <span class="source-verse-label">${escapeHtml(group.sourceRef)}</span>
+                <span class="source-verse-text">${escapeHtml(group.sourceText)}</span>
+                <span class="verse-group-meta">${group.rows.length} related passage${group.rows.length === 1 ? "" : "s"}</span>
+              </span>
+              <span class="toggle-mark" aria-hidden="true">+</span>
+            </button>
+            <div class="group-cards" id="${groupId}" hidden>${cards}</div>
+          </section>`;
+        }).join("");
+        return;
+      }
+
+      const rows = lexicalCards();
+      if (!rows.length) {
+        els.cards.innerHTML = `<div class="empty">No lexical echoes were found for this passage.</div>`;
+        return;
+      }
+      els.cards.innerHTML = rows.map((row, index) => {
+        const color = palette[index % palette.length];
+        return `<article class="card c-${color}">
+          <div class="card-top"><span>${escapeHtml(row.source || "Related")}</span><span>${escapeHtml(row.ref)}</span></div>
+          <p>${escapeHtml(row.text)}</p>
+          <small>Read full chapter</small>
+        </article>`;
+      }).join("");
+    }
+
+    function toggleGroup(button) {
+      const target = document.getElementById(button.getAttribute("aria-controls"));
+      if (!target) return;
+      const willOpen = button.getAttribute("aria-expanded") !== "true";
+      els.cards.querySelectorAll("[data-group-toggle]").forEach((other) => {
+        const otherTarget = document.getElementById(other.getAttribute("aria-controls"));
+        other.setAttribute("aria-expanded", "false");
+        other.querySelector(".toggle-mark").textContent = "+";
+        if (otherTarget) otherTarget.hidden = true;
+      });
+      button.setAttribute("aria-expanded", String(willOpen));
+      button.querySelector(".toggle-mark").textContent = willOpen ? "-" : "+";
+      target.hidden = !willOpen;
+    }
+
+    function citedGroups() {
+      const groups = [];
+      const seen = new Set();
+      verseRows(currentRange).forEach((row) => {
+        const source = `${row.book} ${row.chapter}:${row.verse}`;
+        const rows = [];
+        openBibleRefsFor(source).slice(0, 18).forEach((xref) => {
+          const key = `${source}|${xref.to}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          const parsed = parseReference(xref.to);
+          const text = verseRows(parsed).map((r) => tokensToText(r.tokens)).join(" ");
+          rows.push({ source: `${xref.votes} votes`, ref: parsed.label, text, votes: xref.votes });
+        });
+        if (rows.length === 0) {
+          seededCitedRefsFor(source).forEach((ref) => {
+            const parsed = parseReference(ref);
+            const text = verseRows(parsed).map((r) => tokensToText(r.tokens)).join(" ");
+            rows.push({ source: "seeded", ref: parsed.label, text, votes: -1 });
+          });
+        }
+        if (rows.length) {
+          groups.push({
+            sourceRef: prettyRef(source),
+            sourceText: tokensToText(row.tokens),
+            rows: rows.sort((a, b) => b.votes - a.votes).slice(0, 12)
+          });
+        }
+      });
+      return groups;
+    }
+
+    function openBibleRefsFor(ref) {
+      return crossrefs?.refs?.[prettyRef(ref)] || [];
+    }
+
+    function seededCitedRefsFor(ref) {
+      return seededCitedMap[ref] || seededCitedMap[prettyRef(ref)] || [];
+    }
+
+    function parseReference(raw) {
+      const text = raw.trim().replace(/\s+/g, " ");
+      const match = text.match(/^(.+?)\s+(\d+)(?::(\d+)(?:\s*-\s*(?:(\d+):)?(\d+))?)?$/);
+      if (!match) throw new Error("Use a reference like Luke 16:14-17 or Psalm 1.");
+      const book = canonicalBook(match[1]);
+      if (!book) throw new Error(`Book not found: ${match[1]}`);
+      const chapter = Number(match[2]);
+      const chapterRows = bible.books[book]?.[chapter - 1];
+      if (!chapterRows) throw new Error(`Chapter not found: ${prettyBook(book)} ${chapter}`);
+      const startVerse = match[3] ? Number(match[3]) : 1;
+      const endChapter = match[4] ? Number(match[4]) : chapter;
+      const endChapterRows = bible.books[book]?.[endChapter - 1];
+      if (!endChapterRows) throw new Error(`Chapter not found: ${prettyBook(book)} ${endChapter}`);
+      const endVerse = match[5] ? Number(match[5]) : (match[3] ? startVerse : chapterRows.length);
+      return { book, chapter, startVerse, endChapter, endVerse, label: displayReference(book, chapter, startVerse, endChapter, endVerse) };
+    }
+
+    function lexicalCards() {
+      const selected = verseRows(currentRange);
+      const tags = new Set();
+      selected.forEach((row) => {
+        row.tokens.forEach((token) => {
+          if (token[1]) token[1].split(/\s+/).forEach((tag) => tags.add(tag));
+        });
+      });
+      const results = [];
+      Object.entries(bible.books).forEach(([book, chapters]) => {
+        chapters.forEach((chapterRows, chapterIndex) => {
+          chapterRows.forEach((tokens, verseIndex) => {
+            const ref = `${book} ${chapterIndex + 1}:${verseIndex + 1}`;
+            if (selected.some((row) => `${row.book} ${row.chapter}:${row.verse}` === ref)) return;
+            let score = 0;
+            tokens.forEach((token) => {
+              if (!token[1]) return;
+              token[1].split(/\s+/).forEach((tag) => {
+                if (tags.has(tag)) score += 1;
+              });
+            });
+            if (score >= 3) results.push({ score, ref, text: tokensToText(tokens) });
+          });
+        });
+      });
+      return results
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 18)
+        .map((row) => ({ source: `${row.score} shared tags`, ref: prettyRef(row.ref), text: row.text }));
+    }
+
+    function tokensToText(tokens) {
+      let previous = "";
+      return tokens.map((token) => {
+        const spacer = needsSpace(previous, token[0]) ? " " : "";
+        previous = token[0];
+        return spacer + token[0];
+      }).join("").replace(/\s+/g, " ").trim();
+    }
+
+    function needsSpace(previous, current) {
+      if (!previous || !current) return false;
+      if (previous.endsWith(" ") || current.startsWith(" ")) return false;
+      if (/^[,.;:?!%)]/.test(current)) return false;
+      if (/^['"]/.test(current) && /[A-Za-z0-9]$/.test(previous)) return false;
+      if (/[(]$/.test(previous)) return false;
+      return true;
+    }
+
+    function prettyRef(ref) {
+      return prettyBook(ref);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+  </script>
+</body>
+</html>
