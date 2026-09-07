@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "ESV Bible Study",
+  "short_name": "ESV Study",
+  "description": "Your ESV Bible study dashboard, saved on your device for offline use.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f4ec",
+  "theme_color": "#f8f4ec",
+  "icons": [
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
