@@ -1,6 +1,6 @@
 "use strict";
 const PREFIX = `esv-study-shell:${self.registration.scope}:`;
-const CACHE = `${PREFIX}v4`;
+const CACHE = `${PREFIX}v5`;
 const ASSETS = ["index.html", "offline.js", "manifest.webmanifest", "icon.png"];
 const absolute = (path) => new URL(path, self.registration.scope).href;
 
@@ -18,8 +18,6 @@ self.addEventListener("activate", (event) => {
     await Promise.all(names.filter((name) => name.startsWith(PREFIX) && name !== CACHE)
       .map((name) => caches.delete(name)));
     await self.clients.claim();
-    const windows = await self.clients.matchAll({ type: "window" });
-    await Promise.all(windows.map((client) => client.navigate(client.url).catch(() => null)));
   })());
 });
 
