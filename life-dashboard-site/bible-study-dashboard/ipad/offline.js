@@ -76,8 +76,8 @@
     el("offlineState").textContent = saved && shellReady ? "Offline ready" :
       saved ? "Study data saved. App download needed." : "Offline setup needed";
     el("offlineDetail").textContent = saved && shellReady
-      ? "The app and all 66 ESV books are saved on this device. Keep your study file in Files as a backup."
-      : "Import ESV-Study-Data.json to save the Bible and cross-references on this device. Your file stays here.";
+      ? "The app and all 66 ESV books are saved in this browser. Keep the original file as your backup."
+      : "Import ESV-Study-Data.json to load the Bible and cross-references into this browser. Nothing is uploaded.";
     el("saveOffline").disabled = !payload || operation;
   }
 
@@ -204,8 +204,9 @@
         el("loading").classList.add("hidden");
         el("offlineSetup").open = true;
         el("dataStatus").textContent = "Import your ESV study file to begin.";
-        el("chapterTitle").textContent = "Your offline study space";
-        el("passage").textContent = "Set up once, then read and explore without an internet connection.";
+        el("rangeLabel").textContent = "ESV file needed";
+        el("passageBoard").innerHTML = `<div class="workspace-empty">Choose ESV-Study-Data.json below. The file will stay in this browser and will not be added to the public site.</div>`;
+        el("cards").innerHTML = `<div class="empty">Cross-references will appear after your ESV file is loaded.</div>`;
       }
       const shellError = await shell;
       report();

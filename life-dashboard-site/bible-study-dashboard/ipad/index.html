@@ -84,10 +84,121 @@
       line-height: 1.45;
     }
 
+    .edition-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin: 0 0 18px;
+      border: 2px solid var(--ink);
+      background: #fff;
+    }
+
+    .edition-switch a {
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .edition-switch a + a { border-left: 2px solid var(--ink); }
+    .edition-switch a:hover { background: var(--lemon); }
+    .edition-switch a[aria-current="page"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
     .search-box {
       display: grid;
       gap: 10px;
     }
+
+    .passage-form-head,
+    .field-head,
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .passage-form-head strong { font-size: 16px; }
+
+    .passage-count {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .passage-fields {
+      display: grid;
+      gap: 10px;
+    }
+
+    .passage-field {
+      display: grid;
+      gap: 6px;
+      border-left: 6px solid var(--field-color, var(--blue));
+      padding-left: 9px;
+    }
+
+    .passage-field:nth-child(1) { --field-color: var(--blue); }
+    .passage-field:nth-child(2) { --field-color: var(--gold); }
+    .passage-field:nth-child(3) { --field-color: var(--green); }
+    .passage-field:nth-child(4) { --field-color: var(--rose); }
+    .passage-field:nth-child(5) { --field-color: var(--violet); }
+
+    .passage-field label {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .passage-field-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 6px;
+    }
+
+    .remove-passage {
+      min-width: 42px;
+      border: 2px solid var(--ink);
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .remove-passage:hover { background: var(--rose); }
+
+    .field-hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .form-actions { align-items: stretch; }
+
+    .form-actions button {
+      flex: 1 1 0;
+      min-height: 44px;
+      border: 2px solid var(--ink);
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .add-passage { background: #fff; color: var(--ink); }
+    .load-passages { background: var(--ink); color: #fff; }
+    .add-passage:hover { background: var(--lemon); }
+    .load-passages:hover { background: #3d3932; }
+    .form-actions button:disabled { cursor: default; opacity: .45; }
 
     .search-box label {
       font-size: 12px;
@@ -114,6 +225,18 @@
 
     input:focus {
       box-shadow: 0 0 0 4px rgba(120, 184, 221, .35);
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid #2f7fa7;
+      outline-offset: 3px;
+    }
+
+    .search-box .passage-field label {
+      letter-spacing: 0;
+      text-transform: none;
     }
 
     .icon-button, .chip, .tab {
@@ -202,32 +325,92 @@
 
     .passage-wrap {
       overflow: auto;
-      padding: 34px 34px 46px;
+      padding: 24px 24px 38px;
+    }
+
+    .passage-board {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 390px), 1fr));
+      gap: 22px;
+      align-items: start;
+    }
+
+    .passage-sheet {
+      --sheet-color: var(--blue);
+      min-width: 0;
+      border: 2px solid var(--ink);
+      background: #fff;
+      box-shadow: 8px 8px 0 rgba(23, 21, 18, .16);
+    }
+
+    .passage-sheet.slot-blue { --sheet-color: var(--blue); }
+    .passage-sheet.slot-gold { --sheet-color: var(--gold); }
+    .passage-sheet.slot-green { --sheet-color: var(--green); }
+    .passage-sheet.slot-rose { --sheet-color: var(--rose); }
+    .passage-sheet.slot-violet { --sheet-color: var(--violet); }
+
+    .passage-sheet.is-active {
+      box-shadow: 0 0 0 4px var(--sheet-color), 8px 8px 0 rgba(23, 21, 18, .2);
+    }
+
+    .passage-sheet-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      border-bottom: 2px solid var(--ink);
+      padding: 14px 16px;
+      background: var(--sheet-color);
+    }
+
+    .passage-sheet-label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      font-weight: 800;
     }
 
     .passage-title {
-      margin: 0 0 20px;
+      margin: 0;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: clamp(34px, 5vw, 64px);
-      line-height: .92;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: .98;
       letter-spacing: 0;
     }
 
+    .focus-passage {
+      flex: 0 0 auto;
+      border: 2px solid var(--ink);
+      background: #fff;
+      padding: 7px 9px;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .focus-passage:hover { background: var(--lemon); }
+
+    .focus-passage[aria-pressed="true"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
     .passage {
-      max-width: 980px;
       display: grid;
-      gap: 18px;
-      font-size: clamp(24px, 2.5vw, 36px);
-      line-height: 1.32;
+      gap: 15px;
+      padding: 20px 18px 24px;
+      font-size: clamp(19px, 1.65vw, 27px);
+      line-height: 1.38;
     }
 
     .verse {
       display: grid;
-      grid-template-columns: 48px minmax(0, 1fr);
-      gap: 12px;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 10px;
       align-items: start;
       border-bottom: 1px solid rgba(23, 21, 18, .16);
-      padding-bottom: 18px;
+      padding-bottom: 15px;
     }
 
     .verse-num {
@@ -270,11 +453,34 @@
     }
 
     .note-line {
-      margin-top: 26px;
+      margin: 28px 0 0;
       color: var(--muted);
       font-size: 15px;
       line-height: 1.45;
-      max-width: 720px;
+      max-width: 860px;
+    }
+
+    .passage-error {
+      margin: 18px;
+      border: 2px dashed var(--ink);
+      padding: 16px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .workspace-empty {
+      grid-column: 1 / -1;
+      min-height: 280px;
+      display: grid;
+      place-items: center;
+      border: 2px dashed var(--ink);
+      padding: 28px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.5;
+      text-align: center;
     }
 
     .related {
@@ -488,7 +694,7 @@
       }
 
       .passage-wrap {
-        padding: 22px 18px 30px;
+        padding: 18px 14px 28px;
       }
 
       .toolbar {
@@ -499,35 +705,59 @@
       .cards {
         grid-template-columns: 1fr;
       }
+
+      .passage-board { grid-template-columns: 1fr; }
+
+      .passage-sheet-head { flex-direction: column; }
+
+      .focus-passage { width: 100%; }
     }
   </style>
 </head>
 <body>
-  <div class="loading" id="loading">Loading local ESV Bible data...</div>
+  <div class="loading" id="loading">Opening your ESV study space...</div>
   <main class="app">
     <aside class="rail">
       <div class="brand">
-        <h1>Bible Study Dashboard</h1>
-        <p>Read the ESV, explore cross-references, and discover lexical echoes. Save your study library for offline reading.</p>
+        <nav class="edition-switch" aria-label="Bible edition">
+          <a href="../">WEB reader</a>
+          <a href="./" aria-current="page">My ESV</a>
+        </nav>
+        <h1>ESV Study Workspace</h1>
+        <p>Open up to five passages at once. Your imported ESV text stays on this device.</p>
       </div>
 
       <form class="search-box" id="searchForm">
-        <label for="referenceInput">Passage</label>
-        <div class="search-row">
-          <input id="referenceInput" value="Luke 16:14-17" autocomplete="off" spellcheck="false">
-          <button class="icon-button" type="submit" aria-label="Load passage">Go</button>
+        <div class="passage-form-head">
+          <strong>Passages</strong>
+          <span class="passage-count" id="passageCount">2 of 5</span>
+        </div>
+        <div class="passage-fields" id="passageFields">
+          <div class="passage-field">
+            <div class="field-head">
+              <label for="passageInput1">Passage 1</label>
+            </div>
+            <div class="passage-field-row">
+              <input id="passageInput1" value="Luke 16:14-17" autocomplete="off" spellcheck="false">
+              <button class="remove-passage" type="button" data-remove-passage aria-label="Remove Passage 1" hidden>&times;</button>
+            </div>
+          </div>
+          <div class="passage-field">
+            <div class="field-head">
+              <label for="passageInput2">Passage 2</label>
+            </div>
+            <div class="passage-field-row">
+              <input id="passageInput2" value="Romans 8:1-4" autocomplete="off" spellcheck="false">
+              <button class="remove-passage" type="button" data-remove-passage aria-label="Remove Passage 2">&times;</button>
+            </div>
+          </div>
+        </div>
+        <p class="field-hint">Give every passage its own field. Use a reference such as Psalm 1 or John 1:1-5.</p>
+        <div class="form-actions">
+          <button class="add-passage" id="addPassage" type="button">Add passage</button>
+          <button class="load-passages" type="submit">Open passages</button>
         </div>
       </form>
-
-      <section>
-        <p class="panel-title">Try</p>
-        <div class="examples">
-          <button class="chip" data-ref="Luke 16:14-17">Luke 16:14-17</button>
-          <button class="chip" data-ref="Romans 8:1-11">Romans 8:1-11</button>
-          <button class="chip" data-ref="Psalm 1">Psalm 1</button>
-          <button class="chip" data-ref="Matthew 5:17-20">Matthew 5:17-20</button>
-        </div>
-      </section>
 
       <div class="status" id="dataStatus" role="status">Preparing dashboard...</div>
       <section class="status offline-settings" aria-label="Offline setup">
@@ -537,11 +767,11 @@
           <ol>
             <li>On iPad, open this page in Safari. Tap Share, then Add to Home Screen.</li>
             <li>Open ESV Study from its new Home Screen icon.</li>
-            <li>Choose your ESV-Study-Data.json file below. Wait for Offline ready.</li>
+            <li>Choose your ESV-Study-Data.json file below. It is read only on this device.</li>
           </ol>
           <label for="studyDataFile">Import ESV study data</label>
           <input id="studyDataFile" type="file" accept=".json,application/json">
-          <p id="offlineDetail" aria-live="polite">Your study file stays on this device.</p>
+          <p id="offlineDetail" aria-live="polite">Nothing from your study file is uploaded to GitHub.</p>
           <button class="chip" id="saveOffline" type="button" disabled>Save for offline use</button>
         </details>
       </section>
@@ -549,23 +779,22 @@
 
     <section class="study">
       <div class="toolbar">
-        <strong id="rangeLabel">Luke 16:14-17</strong>
+        <strong id="rangeLabel">2 passages open</strong>
         <div class="tabs">
           <button class="tab active" id="tabCited" type="button">Cross-references</button>
           <button class="tab" id="tabLexical" type="button">Lexical echoes</button>
         </div>
       </div>
       <div class="passage-wrap">
-        <h2 class="passage-title" id="chapterTitle">The Law and the Kingdom of God</h2>
-        <article class="passage" id="passage"></article>
+        <div class="passage-board" id="passageBoard"></div>
         <p class="note-line" id="noteLine"></p>
       </div>
     </section>
 
     <aside class="related">
       <div class="related-head">
-        <h2 id="relatedTitle">Related Verses</h2>
-        <p id="relatedMeta">Cards populate from the cited-verse layer first, then from local Strong's-tag overlap.</p>
+        <h2 id="relatedTitle">Cross-References</h2>
+        <p id="relatedMeta">Choose a passage sheet to explore its related verses.</p>
       </div>
       <div class="cards" id="cards"></div>
     </aside>
@@ -608,18 +837,23 @@
       "Luke 16:17": ["Matthew 5:18"]
     };
 
+    const MAX_PASSAGES = 5;
+    const sheetColors = ["blue", "gold", "green", "rose", "violet"];
     let bible = null;
     let crossrefs = null;
     let currentRange = null;
     let currentMode = "cited";
+    let activePassageIndex = 0;
+    let passageEntries = [];
 
     const els = {
       loading: document.getElementById("loading"),
       form: document.getElementById("searchForm"),
-      input: document.getElementById("referenceInput"),
+      fields: document.getElementById("passageFields"),
+      passageCount: document.getElementById("passageCount"),
+      addPassage: document.getElementById("addPassage"),
       range: document.getElementById("rangeLabel"),
-      title: document.getElementById("chapterTitle"),
-      passage: document.getElementById("passage"),
+      board: document.getElementById("passageBoard"),
       cards: document.getElementById("cards"),
       note: document.getElementById("noteLine"),
       status: document.getElementById("dataStatus"),
@@ -634,19 +868,26 @@
       crossrefs = crossrefData;
       els.loading.classList.add("hidden");
       els.status.textContent = `${bible.versionName}. ${Object.keys(bible.books).length} books loaded. ${crossrefs.source_verses.toLocaleString()} verses with cross-references.`;
-      loadReference(els.input.value);
+      loadPassages();
     });
 
     els.form.addEventListener("submit", (event) => {
       event.preventDefault();
-      loadReference(els.input.value);
+      loadPassages();
     });
 
-    document.querySelectorAll("[data-ref]").forEach((button) => {
-      button.addEventListener("click", () => {
-        els.input.value = button.dataset.ref;
-        loadReference(button.dataset.ref);
-      });
+    els.addPassage.addEventListener("click", () => addPassageField());
+    els.fields.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove-passage]");
+      if (!button || !els.fields.contains(button)) return;
+      button.closest(".passage-field").remove();
+      syncPassageFields();
+      if (bible) loadPassages();
+    });
+    els.board.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-focus-passage]");
+      if (!button || !els.board.contains(button)) return;
+      selectPassage(Number(button.dataset.focusPassage));
     });
 
     els.tabCited.addEventListener("click", () => switchMode("cited"));
@@ -663,6 +904,112 @@
       els.tabLexical.classList.toggle("active", mode === "lexical");
       renderCards();
     }
+
+    function addPassageField(value = "") {
+      const count = els.fields.querySelectorAll(".passage-field").length;
+      if (count >= MAX_PASSAGES) return;
+      const field = document.createElement("div");
+      field.className = "passage-field";
+      field.innerHTML = `<div class="field-head"><label>Passage</label></div>
+        <div class="passage-field-row">
+          <input value="${escapeHtml(value)}" autocomplete="off" spellcheck="false">
+          <button class="remove-passage" type="button" data-remove-passage>&times;</button>
+        </div>`;
+      els.fields.appendChild(field);
+      syncPassageFields();
+      field.querySelector("input").focus();
+    }
+
+    function syncPassageFields() {
+      const fields = Array.from(els.fields.querySelectorAll(".passage-field"));
+      fields.forEach((field, index) => {
+        const number = index + 1;
+        const input = field.querySelector("input");
+        const label = field.querySelector("label");
+        const remove = field.querySelector("[data-remove-passage]");
+        input.id = `passageInput${number}`;
+        label.htmlFor = input.id;
+        label.textContent = `Passage ${number}`;
+        remove.hidden = fields.length === 1;
+        remove.setAttribute("aria-label", `Remove Passage ${number}`);
+      });
+      els.passageCount.textContent = `${fields.length} of ${MAX_PASSAGES}`;
+      els.addPassage.disabled = fields.length >= MAX_PASSAGES;
+    }
+
+    function loadPassages() {
+      if (!bible) return;
+      const inputs = Array.from(els.fields.querySelectorAll("input"));
+      passageEntries = inputs.map((input, index) => {
+        const raw = input.value.trim();
+        if (!raw) return { slot: index, raw, error: "Enter a passage in this field." };
+        try {
+          return { slot: index, raw, range: parseReference(raw) };
+        } catch (error) {
+          return { slot: index, raw, error: error.message };
+        }
+      });
+      const validEntries = passageEntries.filter((entry) => entry.range);
+      if (!validEntries.some((entry) => entry.slot === activePassageIndex)) {
+        activePassageIndex = validEntries[0]?.slot ?? 0;
+      }
+      currentRange = passageEntries.find((entry) => entry.slot === activePassageIndex)?.range || null;
+      els.range.textContent = validEntries.length === passageEntries.length
+        ? `${validEntries.length} passage${validEntries.length === 1 ? "" : "s"} open`
+        : `${validEntries.length} of ${passageEntries.length} passages open`;
+      renderPassageBoard();
+      renderCards();
+    }
+
+    function selectPassage(index) {
+      const entry = passageEntries.find((item) => item.slot === index && item.range);
+      if (!entry) return;
+      activePassageIndex = index;
+      currentRange = entry.range;
+      renderPassageBoard();
+      renderCards();
+    }
+
+    function renderPassageBoard() {
+      if (!passageEntries.length) {
+        els.board.innerHTML = `<div class="workspace-empty">Add a passage field to begin.</div>`;
+        return;
+      }
+      els.board.innerHTML = passageEntries.map((entry) => {
+        const number = entry.slot + 1;
+        const color = sheetColors[entry.slot % sheetColors.length];
+        const active = entry.slot === activePassageIndex && Boolean(entry.range);
+        const title = entry.range ? entry.range.label : (entry.raw || `Passage ${number}`);
+        const body = entry.range
+          ? `<div class="passage">${renderPassageRows(entry.range)}</div>`
+          : `<p class="passage-error">${escapeHtml(entry.error)}</p>`;
+        return `<article class="passage-sheet slot-${color}${active ? " is-active" : ""}" aria-labelledby="passage-title-${number}">
+          <header class="passage-sheet-head">
+            <div>
+              <span class="passage-sheet-label">Passage ${number}</span>
+              <h2 class="passage-title" id="passage-title-${number}">${escapeHtml(title)}</h2>
+            </div>
+            ${entry.range ? `<button class="focus-passage" type="button" data-focus-passage="${entry.slot}" aria-pressed="${active}">${active ? "References shown" : "Show references"}</button>` : ""}
+          </header>
+          ${body}
+        </article>`;
+      }).join("");
+      els.note.textContent = `${bible.meta.copyright} Cross-references: OpenBible.info (CC-BY), based mostly on the Treasury of Scripture Knowledge. Related verse text is rendered from your imported ESV file.`;
+    }
+
+    function renderPassageRows(range) {
+      return verseRows(range).map((row) => {
+        const ref = `${row.book} ${row.chapter}:${row.verse}`;
+        const citeCount = openBibleRefsFor(ref).length || seededCitedRefsFor(ref).length;
+        const letter = citeCount ? `<span class="ref-letter">${String.fromCharCode(96 + Math.min(citeCount, 26))}</span>` : "";
+        return `<div class="verse" data-ref="${escapeHtml(ref)}">
+          <span class="verse-num"><span class="verse-number">${row.verse}</span>${letter}</span>
+          <span class="verse-text">${renderVerseTokens(row.tokens, citeCount > 0)}</span>
+        </div>`;
+      }).join("");
+    }
+
+    syncPassageFields();
 
     function canonicalBook(name) {
       const cleaned = name.toLowerCase().replace(/\s+/g, " ").trim();
@@ -692,20 +1039,6 @@
         .replace("Song of Solomon", "Song of Songs");
     }
 
-    function loadReference(raw) {
-      if (!bible) return;
-      try {
-        currentRange = parseReference(raw);
-        els.range.textContent = currentRange.label;
-        els.title.textContent = currentRange.book === "Luke" && currentRange.chapter === 16 ? "The Law and the Kingdom of God" : `${prettyBook(currentRange.book)} ${currentRange.chapter}`;
-        renderPassage();
-        renderCards();
-      } catch (err) {
-        els.passage.innerHTML = `<span class="empty">${escapeHtml(err.message)}</span>`;
-        els.cards.innerHTML = "";
-      }
-    }
-
     function verseRows(range) {
       const rows = [];
       for (let ch = range.chapter; ch <= range.endChapter; ch += 1) {
@@ -717,21 +1050,6 @@
         }
       }
       return rows;
-    }
-
-    function renderPassage() {
-      const rows = verseRows(currentRange);
-      const html = rows.map((row) => {
-        const ref = `${row.book} ${row.chapter}:${row.verse}`;
-        const citeCount = openBibleRefsFor(ref).length || seededCitedRefsFor(ref).length;
-        const letter = citeCount ? `<span class="ref-letter">${String.fromCharCode(96 + Math.min(citeCount, 26))}</span>` : "";
-        return `<div class="verse" data-ref="${escapeHtml(ref)}">
-          <span class="verse-num"><span class="verse-number">${row.verse}</span>${letter}</span>
-          <span class="verse-text">${renderVerseTokens(row.tokens, citeCount > 0)}</span>
-        </div>`;
-      }).join("");
-      els.passage.innerHTML = html;
-      els.note.textContent = `${bible.meta.copyright} Cross-references: OpenBible.info (CC-BY), based mostly on the Treasury of Scripture Knowledge. These are not the official ESV study notes.`;
     }
 
     function renderVerseTokens(tokens, hasRefs) {
@@ -747,11 +1065,16 @@
     }
 
     function renderCards() {
-      if (!currentRange) return;
+      if (!currentRange) {
+        els.relatedTitle.textContent = currentMode === "cited" ? "Cross-References" : "Lexical Echoes";
+        els.relatedMeta.textContent = "Open a valid passage, then choose its sheet to explore related verses.";
+        els.cards.innerHTML = `<div class="empty">No passage is selected yet.</div>`;
+        return;
+      }
       els.relatedTitle.textContent = currentMode === "cited" ? "Cross-References" : "Lexical Echoes";
       els.relatedMeta.textContent = currentMode === "cited"
-        ? `${crossrefs.source} loaded locally. Groups follow the passage verse order.`
-        : "Generated locally by comparing shared Strong's tags in the selected passage.";
+        ? `Passage ${activePassageIndex + 1}: ${currentRange.label}. Groups follow its verse order.`
+        : `Passage ${activePassageIndex + 1}: ${currentRange.label}. Generated from shared Strong's tags in your ESV file.`;
 
       if (currentMode === "cited") {
         const groups = citedGroups();
@@ -865,10 +1188,19 @@
       const chapterRows = bible.books[book]?.[chapter - 1];
       if (!chapterRows) throw new Error(`Chapter not found: ${prettyBook(book)} ${chapter}`);
       const startVerse = match[3] ? Number(match[3]) : 1;
+      if (startVerse < 1 || startVerse > chapterRows.length) {
+        throw new Error(`Verse not found: ${prettyBook(book)} ${chapter}:${startVerse}`);
+      }
       const endChapter = match[4] ? Number(match[4]) : chapter;
       const endChapterRows = bible.books[book]?.[endChapter - 1];
       if (!endChapterRows) throw new Error(`Chapter not found: ${prettyBook(book)} ${endChapter}`);
       const endVerse = match[5] ? Number(match[5]) : (match[3] ? startVerse : chapterRows.length);
+      if (endChapter < chapter || (endChapter === chapter && endVerse < startVerse)) {
+        throw new Error("The ending verse must come after the starting verse.");
+      }
+      if (endVerse < 1 || endVerse > endChapterRows.length) {
+        throw new Error(`Verse not found: ${prettyBook(book)} ${endChapter}:${endVerse}`);
+      }
       return { book, chapter, startVerse, endChapter, endVerse, label: displayReference(book, chapter, startVerse, endChapter, endVerse) };
     }
 

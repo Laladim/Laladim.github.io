@@ -79,6 +79,30 @@
       line-height: 1.45;
     }
 
+    .edition-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin: 0 0 18px;
+      border: 2px solid var(--ink);
+      background: #fff;
+    }
+
+    .edition-switch a {
+      padding: 9px 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .edition-switch a + a { border-left: 2px solid var(--ink); }
+    .edition-switch a:hover { background: var(--lemon); }
+    .edition-switch a[aria-current="page"] {
+      background: var(--ink);
+      color: #fff;
+    }
+
     .search-box {
       display: grid;
       gap: 10px;
@@ -109,6 +133,12 @@
 
     input:focus {
       box-shadow: 0 0 0 4px rgba(120, 184, 221, .35);
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 3px solid #2f7fa7;
+      outline-offset: 3px;
     }
 
     .icon-button, .chip, .tab {
@@ -491,8 +521,12 @@
   <main class="app">
     <aside class="rail">
       <div class="brand">
+        <nav class="edition-switch" aria-label="Bible edition">
+          <a href="./" aria-current="page">WEB reader</a>
+          <a href="ipad/">My ESV</a>
+        </nav>
         <h1>Bible Study Dashboard</h1>
-        <p>Enter a passage, read the World English Bible text, then inspect cited verses from the OpenBible cross-reference dataset.</p>
+        <p>Read the public-domain World English Bible, then inspect cited verses from the OpenBible cross-reference dataset.</p>
       </div>
 
       <form class="search-box" id="searchForm">
