@@ -200,6 +200,109 @@
     .load-passages:hover { background: #3d3932; }
     .form-actions button:disabled { cursor: default; opacity: .45; }
 
+    .search-history {
+      display: grid;
+      gap: 9px;
+      border-top: 2px solid var(--ink);
+      padding-top: 14px;
+    }
+
+    .history-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .history-title {
+      display: grid;
+      gap: 2px;
+    }
+
+    .history-title strong { font-size: 15px; }
+
+    .history-title span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.3;
+    }
+
+    .history-clear {
+      border: 0;
+      border-bottom: 1px solid var(--ink);
+      padding: 1px 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .history-clear:hover { background: var(--lemon); }
+
+    .history-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 28px minmax(0, 1fr);
+      gap: 9px;
+      align-items: center;
+      width: 100%;
+      border: 2px solid var(--ink);
+      padding: 0;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .history-item:hover { background: #fffbd6; }
+
+    .history-number {
+      align-self: stretch;
+      display: grid;
+      place-items: center;
+      min-height: 46px;
+      border-right: 2px solid var(--ink);
+      background: var(--mint);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .history-copy {
+      min-width: 0;
+      padding: 7px 8px 7px 0;
+    }
+
+    .history-copy strong,
+    .history-copy small {
+      display: block;
+    }
+
+    .history-copy strong {
+      overflow-wrap: anywhere;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .history-copy small {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .history-empty {
+      margin: 0;
+      border: 1px dashed var(--muted);
+      padding: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
     .search-box label {
       font-size: 12px;
       font-weight: 700;
@@ -759,6 +862,19 @@
         </div>
       </form>
 
+      <section class="search-history" aria-labelledby="searchHistoryTitle">
+        <div class="history-head">
+          <div class="history-title">
+            <strong id="searchHistoryTitle">Search history</strong>
+            <span id="historyCount">Current tab only</span>
+          </div>
+          <button class="history-clear" id="clearHistory" type="button" hidden>Clear</button>
+        </div>
+        <div class="history-list" id="historyList" aria-live="polite">
+          <p class="history-empty">Open passages to add them here. This list clears when you reload or close the page.</p>
+        </div>
+      </section>
+
       <div class="status" id="dataStatus" role="status">Preparing dashboard...</div>
       <section class="status offline-settings" aria-label="Offline setup">
         <strong id="offlineState" role="status">Checking offline setup...</strong>
@@ -838,6 +954,7 @@
     };
 
     const MAX_PASSAGES = 5;
+    const SEARCH_HISTORY_LIMIT = 12;
     const sheetColors = ["blue", "gold", "green", "rose", "violet"];
     let bible = null;
     let crossrefs = null;
@@ -845,6 +962,7 @@
     let currentMode = "cited";
     let activePassageIndex = 0;
     let passageEntries = [];
+    let searchHistory = [];
 
     const els = {
       loading: document.getElementById("loading"),
@@ -852,6 +970,9 @@
       fields: document.getElementById("passageFields"),
       passageCount: document.getElementById("passageCount"),
       addPassage: document.getElementById("addPassage"),
+      historyList: document.getElementById("historyList"),
+      historyCount: document.getElementById("historyCount"),
+      clearHistory: document.getElementById("clearHistory"),
       range: document.getElementById("rangeLabel"),
       board: document.getElementById("passageBoard"),
       cards: document.getElementById("cards"),
@@ -873,7 +994,7 @@
 
     els.form.addEventListener("submit", (event) => {
       event.preventDefault();
-      loadPassages();
+      loadPassages({ remember: true });
     });
 
     els.addPassage.addEventListener("click", () => addPassageField());
@@ -892,6 +1013,15 @@
 
     els.tabCited.addEventListener("click", () => switchMode("cited"));
     els.tabLexical.addEventListener("click", () => switchMode("lexical"));
+    els.clearHistory.addEventListener("click", () => {
+      searchHistory = [];
+      renderSearchHistory();
+    });
+    els.historyList.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-history-index]");
+      if (!button || !els.historyList.contains(button)) return;
+      restoreSearch(Number(button.dataset.historyIndex));
+    });
     els.cards.addEventListener("click", (event) => {
       const button = event.target.closest("[data-group-toggle]");
       if (!button || !els.cards.contains(button)) return;
@@ -905,7 +1035,7 @@
       renderCards();
     }
 
-    function addPassageField(value = "") {
+    function addPassageField(value = "", shouldFocus = true) {
       const count = els.fields.querySelectorAll(".passage-field").length;
       if (count >= MAX_PASSAGES) return;
       const field = document.createElement("div");
@@ -917,7 +1047,7 @@
         </div>`;
       els.fields.appendChild(field);
       syncPassageFields();
-      field.querySelector("input").focus();
+      if (shouldFocus) field.querySelector("input").focus();
     }
 
     function syncPassageFields() {
@@ -937,7 +1067,7 @@
       els.addPassage.disabled = fields.length >= MAX_PASSAGES;
     }
 
-    function loadPassages() {
+    function loadPassages({ remember = false } = {}) {
       if (!bible) return;
       const inputs = Array.from(els.fields.querySelectorAll("input"));
       passageEntries = inputs.map((input, index) => {
@@ -950,6 +1080,7 @@
         }
       });
       const validEntries = passageEntries.filter((entry) => entry.range);
+      if (remember && validEntries.length === passageEntries.length) rememberSearch(validEntries);
       if (!validEntries.some((entry) => entry.slot === activePassageIndex)) {
         activePassageIndex = validEntries[0]?.slot ?? 0;
       }
@@ -959,6 +1090,49 @@
         : `${validEntries.length} of ${passageEntries.length} passages open`;
       renderPassageBoard();
       renderCards();
+    }
+
+    function rememberSearch(entries) {
+      const passages = entries.map((entry) => entry.range.label);
+      if (!passages.length) return;
+      const key = passages.map((passage) => passage.toLowerCase()).join("|");
+      searchHistory = [
+        { key, passages },
+        ...searchHistory.filter((item) => item.key !== key)
+      ].slice(0, SEARCH_HISTORY_LIMIT);
+      renderSearchHistory();
+    }
+
+    function renderSearchHistory() {
+      els.historyCount.textContent = searchHistory.length
+        ? `${searchHistory.length} search${searchHistory.length === 1 ? "" : "es"} in this tab`
+        : "Current tab only";
+      els.clearHistory.hidden = searchHistory.length === 0;
+      if (!searchHistory.length) {
+        els.historyList.innerHTML = `<p class="history-empty">Open passages to add them here. This list clears when you reload or close the page.</p>`;
+        return;
+      }
+      els.historyList.innerHTML = searchHistory.map((item, index) => {
+        const count = item.passages.length;
+        const label = item.passages.join(" + ");
+        return `<button class="history-item" type="button" data-history-index="${index}" aria-label="Open ${escapeHtml(label)}">
+          <span class="history-number">${index + 1}</span>
+          <span class="history-copy">
+            <strong>${escapeHtml(label)}</strong>
+            <small>${count} passage${count === 1 ? "" : "s"}</small>
+          </span>
+        </button>`;
+      }).join("");
+    }
+
+    function restoreSearch(index) {
+      const item = searchHistory[index];
+      if (!item) return;
+      els.fields.innerHTML = "";
+      item.passages.forEach((passage) => addPassageField(passage, false));
+      activePassageIndex = 0;
+      loadPassages();
+      els.fields.querySelector("input")?.focus();
     }
 
     function selectPassage(index) {

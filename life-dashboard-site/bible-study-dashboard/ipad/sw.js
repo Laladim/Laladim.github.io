@@ -1,6 +1,6 @@
 "use strict";
 const PREFIX = `esv-study-shell:${self.registration.scope}:`;
-const CACHE = `${PREFIX}v5`;
+const CACHE = `${PREFIX}v6`;
 const ASSETS = ["index.html", "offline.js", "manifest.webmanifest", "icon.png"];
 const absolute = (path) => new URL(path, self.registration.scope).href;
 
