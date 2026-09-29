@@ -456,47 +456,29 @@
       box-shadow: 0 0 0 4px var(--sheet-color), 8px 8px 0 rgba(23, 21, 18, .2);
     }
 
-    .passage-sheet-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 14px;
-      border-bottom: 2px solid var(--ink);
-      padding: 14px 16px;
-      background: var(--sheet-color);
+    .passage-sheet[data-focus-passage] { cursor: pointer; }
+
+    .passage-sheet[data-focus-passage]:not(.is-active):hover {
+      box-shadow: 0 0 0 2px var(--sheet-color), 8px 8px 0 rgba(23, 21, 18, .18);
     }
 
-    .passage-sheet-label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 12px;
-      font-weight: 800;
+    .passage-sheet[data-focus-passage]:focus-visible {
+      outline: 3px solid #2f7fa7;
+      outline-offset: 4px;
+    }
+
+    .passage-sheet-head {
+      border-bottom: 2px solid var(--ink);
+      padding: 11px 16px 12px;
+      background: var(--sheet-color);
     }
 
     .passage-title {
       margin: 0;
       font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-      font-size: clamp(28px, 3vw, 42px);
-      line-height: .98;
+      font-size: clamp(22px, 2vw, 30px);
+      line-height: 1;
       letter-spacing: 0;
-    }
-
-    .focus-passage {
-      flex: 0 0 auto;
-      border: 2px solid var(--ink);
-      background: #fff;
-      padding: 7px 9px;
-      color: var(--ink);
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .focus-passage:hover { background: var(--lemon); }
-
-    .focus-passage[aria-pressed="true"] {
-      background: var(--ink);
-      color: #fff;
     }
 
     .passage {
@@ -811,9 +793,6 @@
 
       .passage-board { grid-template-columns: 1fr; }
 
-      .passage-sheet-head { flex-direction: column; }
-
-      .focus-passage { width: 100%; }
     }
   </style>
 </head>
@@ -1006,9 +985,15 @@
       if (bible) loadPassages();
     });
     els.board.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-focus-passage]");
-      if (!button || !els.board.contains(button)) return;
-      selectPassage(Number(button.dataset.focusPassage));
+      const passage = event.target.closest("[data-focus-passage]");
+      if (!passage || !els.board.contains(passage)) return;
+      selectPassage(Number(passage.dataset.focusPassage));
+    });
+    els.board.addEventListener("keydown", (event) => {
+      const passage = event.target.closest("[data-focus-passage]");
+      if (!passage || !els.board.contains(passage) || !["Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      selectPassage(Number(passage.dataset.focusPassage));
     });
 
     els.tabCited.addEventListener("click", () => switchMode("cited"));
@@ -1157,13 +1142,12 @@
         const body = entry.range
           ? `<div class="passage">${renderPassageRows(entry.range)}</div>`
           : `<p class="passage-error">${escapeHtml(entry.error)}</p>`;
-        return `<article class="passage-sheet slot-${color}${active ? " is-active" : ""}" aria-labelledby="passage-title-${number}">
+        const interaction = entry.range
+          ? ` data-focus-passage="${entry.slot}" role="button" tabindex="0" aria-pressed="${active}" aria-label="Show cross-references for ${escapeHtml(title)}"`
+          : ` aria-labelledby="passage-title-${number}"`;
+        return `<article class="passage-sheet slot-${color}${active ? " is-active" : ""}"${interaction}>
           <header class="passage-sheet-head">
-            <div>
-              <span class="passage-sheet-label">Passage ${number}</span>
-              <h2 class="passage-title" id="passage-title-${number}">${escapeHtml(title)}</h2>
-            </div>
-            ${entry.range ? `<button class="focus-passage" type="button" data-focus-passage="${entry.slot}" aria-pressed="${active}">${active ? "References shown" : "Show references"}</button>` : ""}
+            <h2 class="passage-title" id="passage-title-${number}">${escapeHtml(title)}</h2>
           </header>
           ${body}
         </article>`;
